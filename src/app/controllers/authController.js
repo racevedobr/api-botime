@@ -58,7 +58,7 @@ router.post('/authenticate', async (req, res) => {
 });
 
 router.post('/forgot_password', async (req, res) => {
-    const { email} = req.body;
+    const { email } = req.body;
 
     try {
         const user = await User.findOne({ email }) ;
@@ -69,7 +69,7 @@ router.post('/forgot_password', async (req, res) => {
         const token = crypto.randomBytes(20).toString('hex'); 
 
         const now = new Date();
-        now.setDate(now.getHours() + 1);
+        now.setHours(now.getHours() + 1);
 
         await User.findByIdAndUpdate(user.id, {
             '$set': {
@@ -77,20 +77,24 @@ router.post('/forgot_password', async (req, res) => {
                 passwordResetExpires: now,
             }
         });
+        console.log(token, now)
 
         mailer.sendMail({
             to: email,
-            from: 'teste@teste.com',
+            from: 'rodrigoacevedo@outlook.com',
             template: 'auth/forgot_password',
-            context: {token},
+            context: { token },
         }, (err) => {
-            if(err)
+            if(err){
+            console.log(err)
                 return res.status(400).send({ error: 'Cannot send forgot password email'})
+        }
             return res.send();
-        })
+        });
 
 
     } catch(err) {
+        
         res.status(400).send({ error: 'Error on forgot password, try again'});
     }
 });
